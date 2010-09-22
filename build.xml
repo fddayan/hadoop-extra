@@ -1,0 +1,116 @@
+<?xml version="1.0"?>
+
+<project name="hadoop-extra" default="build" basedir=".">
+	
+  <property name="hadoop.lib" location="${hadoop.home}/lib"/>
+
+  <property name="dist.version" value="0.1"/>
+  <property name="src.dir" location="${basedir}/src/java"/>
+  <property name="src.test" location="${basedir}/src/test"/>
+
+  <available file="${src.dir}" type="dir" property="main.available"/>
+  <available file="${src.test}" type="dir" property="test.available"/>
+
+  <property name="conf.dir" location="${hadoop.home}/conf"/>
+
+  <property name="lib.dir" location="${basedir}/lib"/>
+
+  <property name="build.dir" location="${basedir}/build/"/>
+  <property name="build.classes" location="${build.dir}/classes"/>
+  <property name="build.test" location="${build.dir}/test"/>
+
+  <property name="test.results" location="${build.dir}/results"/>
+
+  <property name="javac.debug" value="true"/>
+
+  <property name="dist" location="dist"/>
+
+  <path id="project.class.path">
+    <pathelement location="${build.classes}"/>
+    <pathelement location="${build.test}"/>
+
+    <fileset dir="${lib.dir}" erroronmissingdir="false">
+      <include name="*.jar"/>
+    </fileset>
+
+    <fileset dir="${hadoop.home}">
+      <include name="*.jar"/>
+    </fileset>
+
+    <fileset dir="${hadoop.home}/build" erroronmissingdir="false">
+      <include name="*.jar"/>
+    </fileset>
+
+    <fileset dir="${hadoop.lib}">
+      <include name="**/*.jar"/>
+    </fileset>
+
+	<fileset dir="${hbase.home}">
+      <include name="*.jar"/>
+    </fileset>
+	<fileset dir="${hbase.home}/lib/">
+      <include name="*.jar"/>
+    </fileset>
+  </path>
+
+  <target name="clean">
+    <echo message="cleaning..."/>
+    <delete dir="${build.dir}"/>
+    <delete dir="${dist}"/>
+    <delete dir="${ant.project.name}.tgz"/>
+  </target>
+
+  <target name="build">
+    <echo message="building..."/>
+    <mkdir dir="${build.classes}"/>
+    <mkdir dir="${build.test}"/>
+
+    <javac srcdir="${src.dir}" destdir="${build.classes}" verbose="off" debug="${javac.debug}"
+           includeantruntime="false">
+      <classpath refid="project.class.path"/>
+    </javac>
+
+    <copy todir="${build.classes}">
+      <fileset dir="${src.dir}">
+        <exclude name="**/*.java"/>
+      </fileset>
+    </copy>
+
+    <javac srcdir="${src.test}" destdir="${build.test}" verbose="off" debug="${javac.debug}" includeantruntime="false">
+      <classpath refid="project.class.path"/>
+    </javac>
+
+    <copy todir="${build.test}">
+      <fileset dir="${src.test}">
+        <exclude name="**/*.java"/>
+      </fileset>
+    </copy>
+  </target>
+
+  <target name="jar" depends="build" description="creates module jar">
+    <jar jarfile="${build.dir}/${ant.project.name}-${dist.version}.jar">
+      <fileset dir="${build.classes}"/>
+    </jar>
+  </target>
+
+  <target name="dist" depends="clean" description="packages current project">
+    <mkdir dir="${dist}"/>
+    <copy todir="${dist}">
+      <fileset dir=".">
+        <include name="src/**"/>
+        <include name="build.xml"/>
+        <include name="README.txt"/>
+      </fileset>
+    </copy>
+  </target>
+
+  <target name="tar" depends="dist" description="creates an archive of current project">
+    <tar destfile="${ant.project.name}.tgz"
+         compression="gzip">
+      <tarfileset dir="dist/" prefix="${ant.project.name}">
+        <include name="**/**"/>
+      </tarfileset>
+    </tar>
+  </target>
+
+</project>
