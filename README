@@ -1,0 +1,3 @@
+An input format class that allows multiple input tables to be used in a map reduce job.
+
+Look at sample/MultiTableJob.java
